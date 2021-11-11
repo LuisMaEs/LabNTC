@@ -8,11 +8,6 @@ import time # Necesario para usar delays.
 rm = pyvisa.ResourceManager() # Creamos el objeto Resource Manager
 print(rm.list_resources()) # Imprimimos la lista de recursos: se entiende recursos por instrumentos conectados al pc.
 
-def err(instrumento): # Función que comprueba la cola de errores
-    m=inst.query('SYST:ERR?')
-    #if m !=0:
-    #    return  print(m)
-    return  print(m)
      
 
 Power=0
