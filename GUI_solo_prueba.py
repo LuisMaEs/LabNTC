@@ -1,22 +1,17 @@
 import tkinter as tk
-import pyvisa 
 from tkinter.constants import DISABLED, NORMAL
 import time # Necesario para usar delays.
 
 
 
-rm = pyvisa.ResourceManager() # Creamos el objeto Resource Manager
-print(rm.list_resources()) # Imprimimos la lista de recursos: se entiende recursos por instrumentos conectados al pc.
-
-
 Power=0
 def SwitchOnOff():
     global Power
-    inst = rm.open_resource('GPIB0::20::INSTR')
+
     if Power==0:
         
         mensaje='SOURCE1:CHAN1:POW:STATE 1'
-        inst.write(mensaje)
+        print(mensaje)
         btn_on_off.config(bg='green')
         btn_on_off.config(text='State : On')
         Power=1
@@ -24,14 +19,12 @@ def SwitchOnOff():
     else:
         
         mensaje='SOURCE1:CHAN1:POW:STATE 0'
-        inst.write(mensaje)
+        print(mensaje)
         btn_on_off.config(bg='red')
         btn_on_off.config(text='State : Off')
         Power=0
      
     time.sleep(2)
-    print(inst.query('SYST:ERR?'))
-    inst.close
 
 
 
@@ -44,11 +37,8 @@ def GoToLambda():
     
     if bool(entry_var.get())==1:
         if  1520<float(entry_var.get())<1630:
-            inst = rm.open_resource('GPIB0::20::INSTR')
             mensaje='SOURCE1:CHAN1:WAVE ' + entry_var.get() + 'NM'
-            inst.write(mensaje)
-            print(inst.query('SYST:ERR?'))
-            inst.close()
+            print(mensaje)
 
         else:
             print('Longitud de onda fuera de rango. Rango válido de 1521 nm a 1629 nm. \n')
