@@ -9,7 +9,7 @@ rm = pyvisa.ResourceManager() # Creamos el objeto Resource Manager
 print(rm.list_resources()) # Imprimimos la lista de recursos: se entiende recursos por instrumentos conectados al pc.
 
      
-
+#comentario
 Power=0
 def SwitchOnOff():
     global Power
