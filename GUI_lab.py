@@ -10,8 +10,9 @@ print(rm.list_resources()) # Imprimimos la lista de recursos: se entiende recurs
 
      
 #comentario
-
+#Otro cambiio para otra rama
 #kfnsonfo
+
 Power=0
 def SwitchOnOff():
     global Power
