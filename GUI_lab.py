@@ -8,10 +8,6 @@ import time # Necesario para usar delays.
 rm = pyvisa.ResourceManager() # Creamos el objeto Resource Manager
 print(rm.list_resources()) # Imprimimos la lista de recursos: se entiende recursos por instrumentos conectados al pc.
 
-     
-#comentario
-#Otro cambiio para otra rama
-#kfnsonfo
 
 Power=0
 def SwitchOnOff():
