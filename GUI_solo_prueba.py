@@ -47,11 +47,13 @@ def GoToLambda():
 
 
 window= tk.Tk()
+
 window.title('Laboratorio Biosensado')
 window.geometry('800x600')
 
 
 entry_var = tk.StringVar()
+
 ELambda=tk.Entry(window,textvariable=entry_var,width=10)
 ELambda.grid(column=0,row=0)
 ELambda.config(font=("Courier", 24))
@@ -67,6 +69,9 @@ btn_set_lambda=tk.Button(window, text='Go to Lambda', command=GoToLambda)
 btn_set_lambda.grid(column=1, row=0)
 btn_set_lambda.config(font=("Courier", 24))
 
+LambdaStart=tk.Entry(window,textvariable=entry_var,width=10)
+LambdaStart.grid(column=0,row=0)
+LambdaStart.config(font=("Courier", 24))
 
 
 window.mainloop()
