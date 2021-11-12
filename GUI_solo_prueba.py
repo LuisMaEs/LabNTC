@@ -48,20 +48,24 @@ def GoToLambda():
 
 window= tk.Tk()
 window.title('Laboratorio Biosensado')
-window.geometry('600x400')
+window.geometry('800x600')
+
+
 entry_var = tk.StringVar()
-ELambda=tk.Entry(window,textvariable=entry_var)
-ELambda.grid(column=0,row=1)
+ELambda=tk.Entry(window,textvariable=entry_var,width=10)
+ELambda.grid(column=0,row=0)
+ELambda.config(font=("Courier", 24))
 #Algunas variables utilizadas
 
 
 
 btn_on_off= tk.Button(window, text='State : Off',command=SwitchOnOff,bg='red') 
+btn_on_off.grid(column=2, row=1)
+btn_on_off.config(font=("Courier", 24))
 
-btn_on_off.grid(column=2, row=2)
 btn_set_lambda=tk.Button(window, text='Go to Lambda', command=GoToLambda)
-btn_set_lambda.grid(column=1, row=1)
-
+btn_set_lambda.grid(column=1, row=0)
+btn_set_lambda.config(font=("Courier", 24))
 
 
 
