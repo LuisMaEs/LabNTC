@@ -102,9 +102,10 @@ if __name__ == "__main__":
                 inst.write_termination = '\n'
                 mensaje='SOURCE1:CHAN1:WAVE ' +entry_var.get()+ 'NM'
                 inst.write(mensaje)
+                inst.close()
             else:
                 print('Longitud de onda fuera de rango. Rango válido de 1521 nm a 1629 nm. \n')
-        inst.close()
+        
     Power=0
 
 
@@ -137,14 +138,16 @@ if __name__ == "__main__":
             inst = rm.open_resource('GPIB0::20::INSTR') 
             inst.read_termination = '\n'
             inst.write_termination = '\n'
-            orden.append('SOURCE1:CHAN1:WAV:SWE:MODE CON')
-            orden.append('SOURCE1:CHAN1:WAV:SWE:STAR ' + entry_var1.get() + 'NM')
+            orden.append('SOURCE1:CHAN1:WAV:SWE:MODE CONTINUOUS')
+            orden.append('SOURCE1:CHAN1:WAV:SWE:START ' + entry_var1.get() + 'NM')
             orden.append('SOURCE1:CHAN1:WAV:SWE:STOP ' + entry_var2.get() + 'NM')
-            orden.append('SOURCE1:CHAN1:WAV:SWE:SPE ' + entry_var3.get() + 'nm/s')
+            orden.append('SOURCE1:CHAN1:WAV:SWE:SPEED ' + entry_var3.get() + 'nm/s')
             for i in orden: 
                 inst.write(i)
                 print(inst.query('SYST:ERR?'))
-            inst.query('SOURCE1:CHAN1:WAV:SWE STAR')
+            print(inst.write('SOURCE1:CHAN1:WAV:SWE START'))
+            print(inst.read())
+            
             inst.close()
 
 

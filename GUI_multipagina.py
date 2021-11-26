@@ -2,12 +2,6 @@ import tkinter as tk
 import time
 # Ejemplo con páginas 
 
-
-
-
-
-      
-
 class Page(tk.Frame):
     def __init__(self, *args, **kwargs):
         tk.Frame.__init__(self, *args, **kwargs)
@@ -19,7 +13,7 @@ class Page1(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         
-        btn_on_off= tk.Button(self, text='State : Off',command=lambda widget="btn_on_off" : SwitchOnOff(btn_on_off) ,bg='red') 
+        btn_on_off= tk.Button(self, text='State : Off', command=lambda widget="btn_on_off" : SwitchOnOff(btn_on_off) ,bg='red') 
         btn_on_off.pack(side="top", fill="both", expand=True)
 
         ELambda=tk.Entry(self,textvariable=entry_var)
@@ -35,24 +29,29 @@ class Page2(Page):
        #label = tk.Label(self, text="This is page 2")
        #label.pack(side="top", fill="both", expand=True)
 
-       label_lambda_min=tk.Label(self,text='Longitud de onda inicial')
+       label_lambda_min=tk.Label(self,text='Longitud de onda inicial (nm)')
        label_lambda_min.grid(row=0,column=0,ipadx=5,ipady=15)
        entry_lambda_min=tk.Entry(self,textvariable=entry_var1)
        entry_lambda_min.grid(row=0,column=1,ipadx=5,ipady=15)
        
-       label_lambda_max=tk.Label(self,text='Longitud de onda final')
+       label_lambda_max=tk.Label(self,text='Longitud de onda final (nm)')
        label_lambda_max.grid(row=1,column=0,ipadx=5,ipady=15)
        entry_lambda_max=tk.Entry(self,textvariable=entry_var2,)
        entry_lambda_max.grid(row=1,column=1,ipadx=5,ipady=15)
        
-       label_lambda_speed=tk.Label(self,text='Velocidad del barrido')
+       label_lambda_speed=tk.Label(self,text='Velocidad del barrido (nm/s)')
        label_lambda_speed.grid(row=2,column=0,ipadx=5,ipady=15)
        entry_lambda_speed=tk.Entry(self,textvariable=entry_var3)
        entry_lambda_speed.grid(row=2,column=1,ipadx=5,ipady=15)
+
+       label_lambda_speed=tk.Label(self,text='Resolución (pm)')
+       label_lambda_speed.grid(row=3,column=0,ipadx=5,ipady=15)
+       entry_lambda_speed=tk.Entry(self,textvariable=entry_var4)
+       entry_lambda_speed.grid(row=3,column=1,ipadx=5,ipady=15)
        
 
        btn_barrido_cont=tk.Button(self, text='Hacer barrido', command=BarridoContinuo)
-       btn_barrido_cont.grid(row=3,column=0,columnspan=3,ipadx=5,ipady=15)
+       btn_barrido_cont.grid(row=4,column=0,columnspan=5,ipadx=5,ipady=15)
 
 
 
@@ -141,6 +140,7 @@ if __name__ == "__main__":
     entry_var1 = tk.StringVar()
     entry_var2 = tk.StringVar()
     entry_var3 = tk.StringVar()
+    entry_var4 = tk.StringVar()
     main = MainView(root)
     main.pack(side="top", fill="both", expand=True)
     root.wm_geometry("400x400")

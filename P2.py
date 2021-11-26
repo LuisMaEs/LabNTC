@@ -15,7 +15,7 @@
 import pyvisa # Paquete que manejará la interfaz entre Python y la GPIB.
 import time # Necesario para usar delays.
 import tkinter as tk
-
+import numpy as np
 
 rm = pyvisa.ResourceManager() # Creamos el objeto Resource Manager
 print(rm.list_resources()) # Imprimimos la lista de recursos: se entiende recursos por instrumentos conectados al pc.
@@ -52,59 +52,77 @@ print(err(inst))
 #inst.write('SOURCE1:CHAN1:POW:ATT 7.0') # Ponemos el Láser a 7 dBm
 inst.write('SENS2:CHAN1:POW:UNIT 0')  # Seleccionar dBm como unidad
 print(err(inst))
+inst.write('SOURCE1:CHAN1:POW 6DBM')
+print(err(inst))
 inst.write('SOURCE1:CHAN1:POW:STATE 1') # Encender el Láser 
+print(err(inst))
 
 time.sleep(2)                         # Esperar 5 segundos para que se estabilice el láser
-#print(inst.query('READ2:CHAN1:POW?')) # Lectura de la potencia 
-
-
-
-#inst.write('SENS2:CHAN1:POW:RANGE:AUTO 1')
-#print(err(inst))
-#inst.write('SENS2:CHAN1:POW:RANGE:AUTO 1')
-#print(err(inst))
-
-
-inst.write('SOURCE1:CHAN1:WAV:SWE:MODE CONTINUOUS')
+print(inst.query('READ2:CHAN1:POW?'))
 print(err(inst))
-inst.write('SOURCE1:CHAN1:WAV:SWE:START 1550NM')
-print(err(inst))
-inst.write('SOURCE1:CHAN1:WAV:SWE:STOP 1600NM')
-print(err(inst))
-inst.write('SOURCE1:CHAN1:WAV:SWE:SPEED 10nm/s')
-print(err(inst))
-inst.write('SOURCE1:CHAN1:WAV:SWE START')
-
-
-'SENS2:CHAN1:FUNC:RES?'
-'SENS2:CHAN1:FUNC:PAR:LOGG'
-'TRIG2:CHAN:INP SME'
-
 #FOTO1
-'SOUR1:CHAN1:WAV'
-'SOUR1:CHAN1:WAV:SWE:STAR'
-'SOUR1:CHAN1:WAV:SWE:STOP'
-'SOUR1:CHAN1:WAV:SWE:SPE'
-'SENS2:CHAN1:POW:ATIM 1ms'
-'SOUR1:CHAN1:WAV:SWE:CYCL'
-'TRIG1:CHAN1:OUTP STF'
+inst.write('SOUR1:CHAN1:WAV 1550NM') #Seleccionar lambda
+print(err(inst))
+inst.write('SOUR1:CHAN1:WAV:SWE:STAR 1550NM') #Lambda inicial barrido
+print(err(inst))
+inst.write('SOUR1:CHAN1:WAV:SWE:STOP 1600NM') #Lambda final barrido
+print(err(inst))
+inst.write('SOUR1:CHAN1:WAV:SWE:SPE 10nm/s') #Velocidad de barrido
+print(err(inst))
+inst.write('SENS2:CHAN1:POW:ATIM 1ms') #Es el tiempo para que el módulo realice la medición y la media durante ese intervalo
+print(err(inst))
+inst.write('SOUR1:CHAN1:WAV:SWE:CYCL 1') #El número de ciclos a realizar
+print(err(inst))
+inst.write('TRIG1:CHAN1:OUTP STF') #El output del trigger se hace que sale cuando una Sweep Step termine
+print(err(inst))
+inst.write('SOUR1:CHAN1:WAV:SWE:MODE CONT') # Modo continuo de sweep para el láser
+print(err(inst))
+inst.write('SOUR1:CHAN1:WAV:AM:STAT OFF') #Modulación en amplitud apagada
+print(err(inst))
+inst.write('SOUR1:CHAN1:WAV:SWE:LLOG ON') #Lambda loggin enabled
+print(err(inst))
+inst.write('SOUR1:CHAN1:WAV:SWE:STEP 100pm') #Resolución en Lambda en picometros
+print(err(inst))
+#Con lambda inicial, final y sweeping speed hay que sacar parámetros para el logging
+
+inst.write('SENS2:CHAN1:FUNC:PAR:LOGG 500,1ms')#Número de puntos y el tiempo de medida
+print(err(inst))
+inst.write('TRIG2:CHAN1:INP SME')
+print(err(inst))
+inst.write('SENS2:CHAN1:FUNC:STAT LOGG,START')
+print(err(inst))
+inst.write('SOUR1:CHAN1:WAV:SWE 1') #Empezar sweep
+time.sleep(2)  
+
+inst.write('SENS2:CHAN1:FUNC:RES?')
+values=np.array(inst.read_binary_values('SENS2:CHAN1:FUNC:RES?',datatype='d'))#Esto lleva WRITE Y DESPUÉS READ O UN QUERY
+np.savetxt('testascii.out', values, delimiter=',') 
+print(err(inst))
+
+print(values)
+inst.write('SOUR1:CHAN1:WAV:SWE 0') #logging off
 
 
 
+#La cosa es: (Lambdafinal-lambdainicial)/speed=tiempo de barrido; tiempo de barrido/numero de pasos=tiempo de cada paso(en segundos)
+#Multiplicamos por 1000 para ponerlo en ms(Aquí quien hizo el anterior programa puso x100, supongo que para espaciar las medidas)
+# OJO el tiempo de cada paso no puede ser menor que un ms
+# (Lambdafinal-lambdainicial)*1000/lambdaresolution=número de puntos (estaba la resolucion en picómetros por eso el factor 1000)
 
+#The following settings are the prerequisites for Lambda Logging:
+#Set “[:SOURce[n]][:CHANnel[m]]:WAVelength:SWEep:MODE” on page 141 to CONTinuous.
+#Set “:TRIGger[n][:CHANnel[m]]:OUTPut” on page 176 to STFinished (step finished).
+#Set “[:SOURce[n]][:CHANnel[m]]:WAVelength:SWEep:CYCLes” on page 137 to 1.
+#Set “[:SOURce[n]][:CHANnel[m]]:AM:STATe[l]” on page 117 to OFF.
+#If any of the above prerequisites are not met, then when the sweep is started
+#the status
+#"Sweep parameters inconsistent" will be returned and Lambda Logging will automatically
+#be turned off.
 
-
-
-
-
-
-
-time.sleep(10)                         # Esperar 5 segundos por amor al arte
+#time.sleep(3)                         # Esperar 5 segundos por amor al arte
 #print(inst.write('SOURCE1:CHAN1:POW:STATE 0')) # Apagar el Láser
 
-print(err(inst))
-
-
+#inst.write('SOURCE1:CHAN1:POW:STATE 0')
 inst.close()                          # Cerrar el objeto, acabar medidas.
 
-#Todo bien, funciona correctamente. 05/11/2021
+#Todo bien, funciona correctamente. 24/11/2021
