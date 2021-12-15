@@ -124,12 +124,14 @@ class Page2(Page):
             for i in orden: 
                 inst.write(i)
 
-            root.after(estSweepTime*1500)
+            root.after(estSweepTime*1000+3000)
             loggingStatus = "PROGRESS"
+
             while loggingStatus.endswith("PROGRESS"):
                 loggingStatus = inst.query("SENS2:FUNC:STAT?").strip()
                 print(loggingStatus)
                 root.after(500)
+                
             print('Tamos bien')
             values=inst.query_binary_values('SENS2:CHAN1:FUNC:RES?')
             print('Tamos mejor')
@@ -142,10 +144,10 @@ class Page2(Page):
             print('Tamos no sé')
             inst.write('TRIG2:CHAN1:INP IGN')
             inst.close()
-            wavelengthreal=wavelengthreal[1:int(len(wavelength)+2)] #No entiendo el porqué, pero funciona
+            wavelengthreal=wavelengthreal[1:int(len(wavelength)+2)] #Hay que sumarle 2 por las dimensiones, funciona
             df = pd.DataFrame({"Longitud de onda(nm)" : wavelengthreal, "Potencia(W)" : values})
             print('Tamos no sé')
-            df.to_csv("Resultados.csv", index=False)
+            df.to_csv("Resultados_coef.csv", index=False)
             potencia = df.to_numpy()[:,1]
             plt.plot(wavelengthreal, 10*np.log10(potencia))
             plt.ylabel('Power(dBm)')
@@ -181,15 +183,11 @@ class Page2(Page):
        btn_barrido_cont.grid(row=4,column=0,columnspan=3,ipadx=5,ipady=15)
 
 
-
-
-
 class Page3(Page):
    def __init__(self, *args, **kwargs):
        Page.__init__(self, *args, **kwargs)
        label = tk.Label(self, text="This is page 3")
        label.pack(side="top", fill="both", expand=True)
-
 
 
 class MainView(tk.Frame):
@@ -217,7 +215,6 @@ class MainView(tk.Frame):
         b2.pack(side="left")
         b3.pack(side="left")
         p1.show()    
-
 
 
 #MainLoop
