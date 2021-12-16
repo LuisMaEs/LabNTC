@@ -1,10 +1,11 @@
 import tkinter as tk
 import time
+from tkinter.constants import ON
 import numpy as np
 import math
 import matplotlib.pyplot as plt
 import pandas as pd
-
+from tkinter import ttk
 
 class Page(tk.Frame):
     def __init__(self, *args, **kwargs):
@@ -59,18 +60,23 @@ class Page1(Page):
 
         btn_set_lambda=tk.Button(self, text='Go to Lambda', command=Page1.GoToLambda )
         btn_set_lambda.pack(side="top", fill="both", expand=True)
+
+        
  
 
 class Page2(Page):
-
+    global OnOff
+    OnOff=1
     
     def BarridoContinuo():
+        global OnOff
         orden=[]
         wavelength_start=float(entry_var1.get())
         wavelength_finish= float(entry_var2.get())
         wavelength_step= float(entry_var4.get())*math.pow(10,-3)
         scan_speed= float(entry_var3.get())
-
+        num_barrido=int(entry_var5.get())
+        Unidades=entry_var6.get()
 
         avg_time = 0.1 # photodiode average time
         rangeMAX = 10 #dBm
@@ -106,18 +112,29 @@ class Page2(Page):
             
             for i in orden: 
                 print(i)
-                root.after(500)
             print('que pasa payo')
         
             print('que pasa payo')
             df = pd.read_csv('Resultados2.csv', sep=",")
+            
             potencia = df.to_numpy()[:,1]
             wavelength = df.to_numpy()[:,0]
-            plt.plot(wavelength, 10*np.log10(potencia))
-            plt.ylabel('Power(dBm)')
+            if Unidades=='W':
+                plt.plot(pow(10,9)*wavelength, potencia)
+                plt.ylabel('Power(W)')
+            elif Unidades=='dBm':
+                plt.plot(pow(10,9)*wavelength, 10*np.log10(potencia)+30)
+                plt.ylabel('Power(dBm)')
+            else:
+                plt.plot(pow(10,9)*wavelength, 1000*(potencia))
+                plt.ylabel('Power(mW)')
             plt.xlabel('Wavelength(nm)')
             plt.show()
+            OnOff=1
 
+    def Stop():
+        global OnOff
+        OnOff=0
 
     def __init__(self, *args, **kwargs):
        Page.__init__(self, *args, **kwargs)
@@ -143,11 +160,22 @@ class Page2(Page):
        label_lambda_speed.grid(row=3,column=0,ipadx=5,ipady=15)
        entry_lambda_speed=tk.Entry(self,textvariable=entry_var4)
        entry_lambda_speed.grid(row=3,column=1,ipadx=5,ipady=15)
+
+       label_lambda_speed=tk.Label(self,text='Número de barridos')
+       label_lambda_speed.grid(row=4,column=0,ipadx=5,ipady=15)
+       entry_lambda_speed=tk.Entry(self,textvariable=entry_var5)
+       entry_lambda_speed.grid(row=4,column=1,ipadx=5,ipady=15)
        
 
        btn_barrido_cont=tk.Button(self, text='Hacer barrido', command=Page2.BarridoContinuo)
-       btn_barrido_cont.grid(row=4,column=0,columnspan=5,ipadx=5,ipady=15)
+       btn_barrido_cont.grid(row=5,column=0,columnspan=5,ipadx=5,ipady=15)
 
+       btn_barrido_cont=tk.Button(self, text='Hacer barrido', command=Page2.Stop)
+       btn_barrido_cont.grid(row=6,column=0,columnspan=5,ipadx=5,ipady=15)
+
+       choices=['dBm','W','mW']
+       Seleccion=ttk.Combobox(self, values=choices, state="readonly",textvariable=entry_var6 )
+       Seleccion.grid(row=7,column=0,columnspan=5,ipadx=5,ipady=15)
 
 class Page3(Page):
    def __init__(self, *args, **kwargs):
@@ -190,6 +218,8 @@ if __name__ == "__main__":
     entry_var2 = tk.StringVar()
     entry_var3 = tk.StringVar()
     entry_var4 = tk.StringVar()
+    entry_var5 = tk.StringVar()
+    entry_var6 = tk.StringVar()
     main = MainView(root)
     main.pack(side="top", fill="both", expand=True)
     root.wm_geometry("600x600")
