@@ -3,6 +3,7 @@
 
 # Se importan las librerías que van a ser utilizadas en el desarrollo del programa
 
+from asyncio.tasks import _T1
 from multiprocessing import Event
 import tkinter as tk
 import time
@@ -112,11 +113,11 @@ class Page2(Page):
        fig,ax1= plt.subplots()
        canvas = FigureCanvasTkAgg(fig, master=self)  # Generate canvas instance, Embedding fig in root
        canvas.draw()
-       canvas.get_tk_widget().place(relx = 0.6, rely = 0.4, anchor = 'center', width=1300, height=700)
+       canvas.get_tk_widget().place(relx = 0.6, rely = 0.4, anchor = 'center', relwidth=0.5, relheight=0.5)
        toolbar = NavigationToolbar2Tk(canvas, self)
        toolbar.place(relx = 0.7, rely = 0.8, anchor = 'center')
        toolbar.update()
-       canvas.get_tk_widget().place(relx = 0.65, rely = 0.45, anchor = 'center',width=1300, height=700)
+       canvas.get_tk_widget().place(relx = 0.65, rely = 0.45, anchor = 'center',relwidth=0.5, relheight=0.5)
        
        cid=fig.canvas.callbacks.connect('button_press_event', callback) # Clicks en el plot
        
@@ -145,19 +146,19 @@ class Page2(Page):
        entry_lambda_res.grid(row=3,column=1,ipadx=5,ipady=15)
        entry_lambda_res.insert(0, "25")
 
-       label_lambda_num=tk.Label(self,text='Número de barridos')
-       label_lambda_num.grid(row=4,column=0,ipadx=5,ipady=15)
-       entry_lambda_num=tk.Entry(self,textvariable=entry_var5)
-       entry_lambda_num.grid(row=4,column=1,ipadx=5,ipady=15)
-       entry_lambda_num.insert(0, "1")
+       #label_lambda_num=tk.Label(self,text='Número de barridos')
+       #label_lambda_num.grid(row=4,column=0,ipadx=5,ipady=15)
+       #entry_lambda_num=tk.Entry(self,textvariable=entry_var5)
+       #entry_lambda_num.grid(row=4,column=1,ipadx=5,ipady=15)
+       #entry_lambda_num.insert(0, "1")
 
     ###################################################### BOTONES #########################################
 
        btn_barrido_cont=tk.Button(self, text='Hacer barrido', command= Page2.Hilos)
        btn_barrido_cont.grid(row=5,column=0,columnspan=5,ipadx=5,ipady=15)
 
-       btn_barrido_cont=tk.Button(self, text='Stop Barrido', command=Page2.Stop)
-       btn_barrido_cont.grid(row=5,column=2,columnspan=5,ipadx=5,ipady=15)
+       #btn_barrido_cont=tk.Button(self, text='Stop Barrido', command=Page2.Stop)
+       #btn_barrido_cont.grid(row=5,column=2,columnspan=5,ipadx=5,ipady=15)
 
        btn_barrido_cont=tk.Button(self, text='Ajustar', command=Page2.Hilos2)
        btn_barrido_cont.grid(row=9,column=1,columnspan=5,ipadx=5,ipady=15)
@@ -168,8 +169,8 @@ class Page2(Page):
        label1 = tk.Label(self, text='Puntos del ajuste', fg="black")
        label1.grid(row=8,column=0,columnspan=5,ipadx=5,ipady=15)
 
-       entry_ajust = tk.Entry(self, textvariable=entry_var10 )
-       entry_ajust.grid(row=8,column=3,columnspan=5,ipadx=5,ipady=15)
+       #entry_ajust = tk.Entry(self, textvariable=entry_var10 )
+       #entry_ajust.grid(row=8,column=3,columnspan=5,ipadx=5,ipady=15)
 
        #entry_lambda_min=tk.Entry(self,textvariable=entry_var1)
 
@@ -458,41 +459,41 @@ class Page3(Page):
     def Experimento():
         global contador_sesion
         global ax2,ax3,fig2,fig3,canvas2,canvas3, contador_int
-        global Ajustes, Datos_3D, OnOff
+        global Ajustes, Datos_3D, OnOff, DatosTemp
         OnOff=1
         contador_int = 1 # Contador de en qué ciclo del experimento estamos
 
-        Archivo= 'Resultados_0.csv'
-        df = pd.read_csv(Archivo, sep=",")
-        potencia = df.to_numpy()[:,1]
-        wavelength = df.to_numpy()[:,0]
-        ########################   Matriz auxiliar con los plots. Guardamos la matriz auxiliar
-        Datos = np.dstack((wavelength,potencia))
-        points=1000
-        if contador_sesion == 0:
-            Datos_3D = np.zeros(( 50, points, 2))
+        #Archivo= 'Resultados_0.csv'
+        #df = pd.read_csv(Archivo, sep=",")
+        #potencia = df.to_numpy()[:,1]
+        #wavelength = df.to_numpy()[:,0]
+        #########################   Matriz auxiliar con los plots. Guardamos la matriz auxiliar
+        #Datos = np.dstack((wavelength,potencia))
+        #points=1000
+        #if contador_sesion == 0:
+        #    Datos_3D = np.zeros(( 50, points, 2))
 
-        num_barrido=int(entry_var5.get())
-
-        while OnOff==1:
-            if entry_var7.get()=='Múltiples Barridos': #Comprobar si se han hecho los suficientes barridos
-                if num_barrido==contador_int:
-                    OnOff=0
-            contador_sesion=contador_sesion+1
-            
-            print(contador_sesion)
-            print(contador_int)
-            Datos_3D[:][:][contador_sesion]=Datos # Copiamos cada Datos en 3d por cada sesion
-            Page3.PlotExp()
-            contador_int+=1
+        #num_barrido=int(entry_var5.get())
+#
+        #while OnOff==1:
+        #    if entry_var7.get()=='Múltiples Barridos': #Comprobar si se han hecho los suficientes barridos
+        #        if num_barrido==contador_int:
+        #            OnOff=0
+        #    contador_sesion=contador_sesion+1
+        #    
+        #    print(contador_sesion)
+        #    print(contador_int)
+        #    Datos_3D[:][:][contador_sesion]=Datos # Copiamos cada Datos en 3d por cada sesion
+        #    Page3.PlotExp()
+        #    contador_int+=1
 
 
         #Ha de ser ejecutada en un hilo distinto al principal de la GUI
-        global contador_sesion
-        contador_sesion=0
-        Plot=Datos_3D[:][:][contador_sesion] # Esto es para recuperar los datos del plot
-        potencia=np.log10(Plot[:,1])*10+30 # Recuperar el array de power
-        wavelength=Plot[:,0] # Recuperar el array de wavelenght
+        #global contador_sesion
+        #contador_sesion=0
+        #Plot=Datos_3D[:][:][contador_sesion] # Esto es para recuperar los datos del plot
+        #potencia=np.log10(Plot[:,1])*10+30 # Recuperar el array de power
+        #wavelength=Plot[:,0] # Recuperar el array de wavelenght
 
     
     ######################################################### Tirar experimento ##################################################
@@ -525,6 +526,8 @@ class Page3(Page):
         exppoints = str(int(calcpoints))
         points = int(len(wavelength))
         estSweepTime =  int((float(wavelength_finish) - float(wavelength_start))/float(scan_speed))
+
+        DatosTemp=pd.DataFrame()
 
         ######### Excepciones básicas
         if points>4000:
@@ -609,6 +612,8 @@ class Page3(Page):
             ########################   Matriz auxiliar con los plots. Guardamos la matriz auxiliar
             Datos = np.dstack((wavelengthreal,values))
             Datos_3D[:][:][contador_sesion]=Datos # Copiamos cada Datos en 3d por cada sesion
+
+
             #Plot=Datos_3D[:][:][contador_sesion] # Esto es para recuperar los datos del plot
             #power=Plot[:,1] # Recuperar el array de power
             #wav=Plot[:,0] # Recuperar el array de wavelenght    
@@ -622,7 +627,7 @@ class Page3(Page):
 
     ######################################################### Recoger y guardar datos ##################################################
     def PlotExp():
-        global Ajustes_finales_exp,Ajustes, Ajustes_resultados
+        global Ajustes_finales_exp,Ajustes, Ajustes_resultados,t1,t2,p1,p2,DatosTemp
         ## Función para el plot del Experimento que es algo distinto al anterior utilizado
         # Cogemos a los amigos de la fig2 y fig 3 para actualizarlos
         if contador_int>3: # Si hay más de tres muestras, sólo mostrar las últimas tres
@@ -647,7 +652,13 @@ class Page3(Page):
 
         list_nombres= Ajustes.index
        
-        
+        if contador_int==0:
+            p1=[0]*len(list_nombres)
+            p2=[0]*len(list_nombres)
+            DatosTemp=[]
+            for i in range(len(list_nombres)+1):
+                DatosTemp.append([])
+        cont_aux=0
         for i in list_nombres:
 
             if i.startswith('Gaussian')==True:
@@ -715,12 +726,37 @@ class Page3(Page):
             list_aux=[lim1, lim2]+list(popt)
             Ajuste_final_aux = pd.DataFrame( [(list_aux)], columns=['lim1' ,'lim2','H','A','x0','sigma'], index=[i +'_' +str(contador_int)])
 
+            # Módulo temporal, incrementos de tiempo e incrementos de posición
+            if contador_int==0:
+                if cont_aux==0:
+                    t1 = time.perf_counter()
+                p1[cont_aux] = popt[2]
+            
+            else:
+                p2[cont_aux]=popt[2]
+                deltapos= float(p2[cont_aux]) -float(p1[cont_aux])
+                p1[cont_aux]=p2[cont_aux]
+                DatosTemp[cont_aux].append(deltapos)
+
+                if cont_aux==0:
+                    t2=time.perf_counter()
+                    deltaTemp = t2-t1
+                    DatosTemp[len(list_nombres)].append(deltaTemp)
+                    t1=t2                
+
+            
             try :
                 Ajustes_finales_exp
                 Ajustes_finales_exp=pd.concat([Ajustes_finales_exp, Ajuste_final_aux])
             except NameError: Ajustes_finales_exp = Ajuste_final_aux
+            
+            
+            
 
+            cont_aux=cont_aux+1
+                
             print(Ajustes_finales_exp)
+        print(DatosTemp)
             
 
     def __init__(self, *args, **kwargs):
@@ -796,6 +832,7 @@ class Page3(Page):
         label_nombre.grid(row=7,column=0,ipadx=5,ipady=15)
         entry_nombre=tk.Entry(self,textvariable=entry_var12)
         entry_nombre.grid(row=7,column=1,ipadx=5,ipady=15)
+        entry_nombre.insert(0, 'Prueba')
 
         label_seleccion=tk.Label(self,text='Modo de barrido')
         label_seleccion.grid(row=8,column=0,ipadx=5,ipady=15)
