@@ -38,9 +38,42 @@ class Page(tk.Frame):
 #Para cada página se define una clase, cada página tendra unos métodos concretos y un layout distinto
 
 class Page1(Page):
-
-    global Power # Controlar que el Láser esté encendido
+    global Power
     Power=0
+    def __init__(self, *args, **kwargs):
+        global Etiqueta_potencia
+        Page.__init__(self, *args, **kwargs)                
+        btn_on_off= tk.Button(self, text='State : Off', font=("Calibri",30),justify="center",width=6,fg="black",command=lambda widget="btn_on_off" : Page1.SwitchOnOff(btn_on_off) ,bg='red') 
+        btn_on_off.place(relx = 0.35, rely = 0.2, anchor = 'center', relwidth=0.3, relheight=0.2)
+        #btn_on_off.grid(row=0,column=0,ipadx=100,ipady=80)
+
+        ELambda=tk.Entry(self,font=("Calibri",30),justify="center",width=6,fg="black",textvariable=entry_var)
+        ELambda.place(relx = 0.35, rely = 0.4, anchor = 'center', relwidth=0.3, relheight=0.2)
+
+        btn_set_lambda=tk.Button(self, text='Go to Lambda',font=("Calibri",30),justify="center",width=6,fg="black", command=Page1.GoToLambda )
+        btn_set_lambda.place(relx = 0.50, rely = 0.6, anchor = 'center', relwidth=0.3, relheight=0.2)
+
+        btn_Potencia = tk.Button(self, text="Potencia",font=("Calibri",30),justify="center",width=6,fg="black", command=Page1.Potencia)
+        btn_Potencia.place(relx = 0.65, rely = 0.4, anchor = 'center', relwidth=0.3, relheight=0.2)
+
+        Etiqueta_potencia=tk.Label(self, text="Potencia",fg="white",font=("Calibri",30),justify="center",bg='grey',width=6,borderwidth=15, relief="solid")
+        Etiqueta_potencia.place(relx = 0.65, rely = 0.2, anchor = 'center', relwidth=0.3, relheight=0.2)
+
+    def Potencia():
+        #Medimos la potencia
+        inst = rm.open_resource('GPIB0::20::INSTR') 
+        inst.read_termination = '\n'
+        inst.write_termination = '\n'
+        
+        inst.write('SENS2:CHAN1:POW:UNIT 0') #
+        #inst.write('sens2:pow:unit 0')
+        potencia_medida=float(inst.query('READ2:POW?'))
+        potencia_medida=('%.4f' % potencia_medida)
+        print(potencia_medida)
+        inst.write('TRIG2:CHAN1:INP IGN') # ignorar el trigger
+        Etiqueta_potencia.config( text = potencia_medida+' dBm')
+        inst.close
+
 
     def GoToLambda():
 
@@ -53,6 +86,8 @@ class Page1(Page):
                 inst.write(mensaje)
                 inst.close()
 
+                Page1.Potencia()
+                
             else:
                 print('Longitud de onda fuera de rango. Rango válido de 1521 nm a 1629 nm. \n')
 
@@ -80,17 +115,6 @@ class Page1(Page):
 
         inst.close()
         
-    def __init__(self, *args, **kwargs):
-
-        Page.__init__(self, *args, **kwargs)                
-        btn_on_off= tk.Button(self, text='State : Off', command=lambda widget="btn_on_off" : Page1.SwitchOnOff(btn_on_off) ,bg='red') 
-        btn_on_off.pack(side="top", fill="both", expand=True)
-
-        ELambda=tk.Entry(self,textvariable=entry_var)
-        ELambda.pack(side="top", fill="both", expand=True)
-
-        btn_set_lambda=tk.Button(self, text='Go to Lambda', command=Page1.GoToLambda )
-        btn_set_lambda.pack(side="top", fill="both", expand=True)
 
 ########################################## PÁGINA 2 ######################################################################
 
@@ -107,44 +131,64 @@ class Page2(Page):
         t2.join()
 
     def __init__(self, *args, **kwargs):
-       global canvas,label1, entry_ajust, lim1,lim2, ax1,fig, cid, btn_barrido_cont
-       Page.__init__(self, *args, **kwargs)
 
+       global canvas
+       global ax1,fig, cid
+       Page.__init__(self, *args, **kwargs)
+       global  btn_barrido_cont
        fig,ax1= plt.subplots()
        canvas = FigureCanvasTkAgg(fig, master=self)  # Generate canvas instance, Embedding fig in root
        canvas.draw()
-       canvas.get_tk_widget().place(relx = 0.6, rely = 0.4, anchor = 'center', relwidth=0.5, relheight=0.5)
+       canvas.get_tk_widget().place(relx = 0.6, rely = 0.4, anchor = 'center', relwidth=0.7, relheight=0.65)
        toolbar = NavigationToolbar2Tk(canvas, self)
-       toolbar.place(relx = 0.7, rely = 0.8, anchor = 'center')
+       toolbar.place(relx = 0.65, rely = 0.75, anchor = 'center')
        toolbar.update()
-       canvas.get_tk_widget().place(relx = 0.6, rely = 0.45, anchor = 'center',relwidth=0.75, relheight=0.75)
+       canvas.get_tk_widget().place(relx = 0.65, rely = 0.4, anchor = 'center',relwidth=0.675, relheight=0.65)
        
+       ##canvas.get_tk_widget().place(relx = 0.7, rely = 0.3, anchor = 'center')
+       #canvas.draw()
+
+       #cid = fig.canvas.mpl_connect('button_press_event', callback)
+
        cid=fig.canvas.callbacks.connect('button_press_event', callback) # Clicks en el plot
+       #canvas = FigureCanvasTkAgg(fig, master=root)  # Generate canvas instance, Embedding fig in root
+       #canvas.draw()
+       #canvas.get_tk_widget().pack(side='right')
+       #toolbar = NavigationToolbar2Tk(canvas,root)
+       #toolbar.update()
+       #canvas.get_tk_widget().pack(side='right')
+       #canvas.draw()
+
+
+
+       global lim1,lim2
+       global label1, entry_ajust
        
     ######################### LAS CINCO VARIABLES########################
-       label_lambda_min=tk.Label(self,text='Longitud de onda inicial (nm)')
-       label_lambda_min.grid(row=0,column=0,ipadx=5,ipady=15)
-       entry_lambda_min=tk.Entry(self,textvariable=entry_var1)
-       entry_lambda_min.grid(row=0,column=1,ipadx=5,ipady=15)
-       entry_lambda_min.insert(0, "1530")
+       #englobar=tk.Label
+       label_lambda_min=tk.Label(self,text='Longitud de onda inicial (nm)', font=('Helvetica',14), borderwidth=2, relief="groove")
+       label_lambda_min.place(relx = 0.1, rely = 0.1, anchor = 'center', relwidth=0.15, relheight=0.05)
+       entry_lambda_min=tk.Entry(self,textvariable=entry_var1,font=('Helvetica',14))
+       entry_lambda_min.place(relx = 0.2, rely = 0.1, anchor = 'center', relwidth=0.05, relheight=0.05)
+       entry_lambda_min.insert(0, "1545")
        
-       label_lambda_max=tk.Label(self,text='Longitud de onda final (nm)')
-       label_lambda_max.grid(row=1,column=0,ipadx=5,ipady=15)
-       entry_lambda_max=tk.Entry(self,textvariable=entry_var2)
-       entry_lambda_max.grid(row=1,column=1,ipadx=5,ipady=15)
-       entry_lambda_max.insert(0, "1620")
+       label_lambda_max=tk.Label(self,text='Longitud de onda final (nm)',font=('Helvetica',14),  borderwidth=2, relief="groove")
+       label_lambda_max.place(relx = 0.1, rely = 0.15, anchor = 'center', relwidth=0.15, relheight=0.05)
+       entry_lambda_max=tk.Entry(self,textvariable=entry_var2,font=('Helvetica',14))
+       entry_lambda_max.place(relx = 0.2, rely = 0.15, anchor = 'center', relwidth=0.05, relheight=0.05)
+       entry_lambda_max.insert(0, "1555")
        
-       label_lambda_speed=tk.Label(self,text='Velocidad del barrido (nm/s)')
-       label_lambda_speed.grid(row=2,column=0,ipadx=5,ipady=15)
-       entry_lambda_speed=tk.Entry(self,textvariable=entry_var3)
-       entry_lambda_speed.grid(row=2,column=1,ipadx=5,ipady=15)
+       label_lambda_speed=tk.Label(self,text='Velocidad del barrido (nm/s)',font=('Helvetica',14), borderwidth=2, relief="groove")
+       label_lambda_speed.place(relx = 0.1, rely = 0.2, anchor = 'center', relwidth=0.15, relheight=0.05)
+       entry_lambda_speed=tk.Entry(self,textvariable=entry_var3,font=('Helvetica',14))
+       entry_lambda_speed.place(relx = 0.2, rely = 0.2, anchor = 'center', relwidth=0.05, relheight=0.05)
        entry_lambda_speed.insert(0, "10")
 
-       label_lambda_res=tk.Label(self,text='Resolución (pm)')
-       label_lambda_res.grid(row=3,column=0,ipadx=5,ipady=15)
-       entry_lambda_res=tk.Entry(self,textvariable=entry_var4)
-       entry_lambda_res.grid(row=3,column=1,ipadx=5,ipady=15)
-       entry_lambda_res.insert(0, "25")
+       label_lambda_res=tk.Label(self,text='Resolución (pm)',font=('Helvetica',14), borderwidth=2, relief="groove")
+       label_lambda_res.place(relx = 0.1, rely = 0.25, anchor = 'center', relwidth=0.15, relheight=0.05)
+       entry_lambda_res=tk.Entry(self,textvariable=entry_var4,font=('Helvetica',14))
+       entry_lambda_res.place(relx = 0.2, rely = 0.25, anchor = 'center', relwidth=0.05, relheight=0.05)
+       entry_lambda_res.insert(0, "15")
 
        #label_lambda_num=tk.Label(self,text='Número de barridos')
        #label_lambda_num.grid(row=4,column=0,ipadx=5,ipady=15)
@@ -154,42 +198,43 @@ class Page2(Page):
 
     ###################################################### BOTONES #########################################
 
-       btn_barrido_cont=tk.Button(self, text='Hacer barrido', command= Page2.Hilos)
-       btn_barrido_cont.grid(row=5,column=0,columnspan=5,ipadx=5,ipady=15)
+       btn_barrido_cont=tk.Button(self, text='Hacer barrido',font=('Helvetica',14), borderwidth=2, relief="raised", command= Page2.Hilos)
+       btn_barrido_cont.place(relx = 0.125, rely = 0.3, anchor = 'center', relwidth=0.2, relheight=0.05)
 
        #btn_barrido_cont=tk.Button(self, text='Stop Barrido', command=Page2.Stop)
        #btn_barrido_cont.grid(row=5,column=2,columnspan=5,ipadx=5,ipady=15)
 
-       btn_ajuste=tk.Button(self, text='Ajustar', command=Page2.Hilos2)
-       btn_ajuste.grid(row=9,column=1,columnspan=5,ipadx=5,ipady=15)
-
-       btn_reset=tk.Button(self, text='Resetear', command=reset)
-       btn_reset.grid(row=9,column=2,columnspan=5,ipadx=5,ipady=15)
-
-       label1 = tk.Label(self, text='Puntos del ajuste', fg="black")
-       label1.grid(row=8,column=0,columnspan=5,ipadx=5,ipady=15)
-
-       #entry_ajust = tk.Entry(self, textvariable=entry_var10 )
-       #entry_ajust.grid(row=8,column=3,columnspan=5,ipadx=5,ipady=15)
-
-       #entry_lambda_min=tk.Entry(self,textvariable=entry_var1)
-
        choices=['dBm','W','mW']
-       Seleccion=ttk.Combobox(self, values=choices, state="readonly",textvariable=entry_var6 )
+       Seleccion=ttk.Combobox(self, values=choices, state="readonly",textvariable=entry_var6,font=('Helvetica',14) )
        Seleccion.insert(0, "dBm")
-       Seleccion.grid(row=6,column=0,columnspan=5,ipadx=5,ipady=15)
+       Seleccion.place(relx = 0.2, rely = 0.4, anchor = 'center', relwidth=0.05, relheight=0.05)
        Seleccion.current(0)
 
+       label_unidades = tk.Label(self, text='Unidades:', fg="black",font=('Helvetica',14))
+       label_unidades.place(relx = 0.1, rely = 0.4, anchor = 'center', relwidth=0.15, relheight=0.05)
+
+
        choices2=['Gaussian', 'Lorentzian','Linear','Cuadrático']
-       Seleccion2=ttk.Combobox(self, values=choices2, state="readonly",textvariable=entry_var8 )
-       Seleccion2.grid(row=9,column=0,columnspan=4,ipadx=5,ipady=12)
+       Seleccion2=ttk.Combobox(self, values=choices2, state="readonly",textvariable=entry_var8,font=('Helvetica',14) )
+       Seleccion2.place(relx = 0.075, rely = 0.5, anchor = 'center', relwidth=0.1, relheight=0.05)
        Seleccion2.current(0)
 
-       btn_add=tk.Button(self, text='Añadir ajuste', command= Page2.Añadir)
-       btn_add.grid(row=10,column=0,columnspan=5,ipadx=5,ipady=15)
+       btn_ajust=tk.Button(self, text='Ajustar', font=('Helvetica',14),command=Page2.Hilos2)
+       btn_ajust.place(relx = 0.175, rely = 0.5, anchor = 'center', relwidth=0.075, relheight=0.05)
 
-       btn_suprimir=tk.Button(self, text='Suprimir ajuste', command= Page2.Suprimir)
-       btn_suprimir.grid(row=10,column=1,columnspan=5,ipadx=5,ipady=15)
+       btn_reset=tk.Button(self, text='Resetear',font=('Helvetica',14), command=reset)
+       btn_reset.place(relx = 0.25, rely = 0.5, anchor = 'center', relwidth=0.075, relheight=0.05)
+
+       label1 = tk.Label(self, text='Puntos del ajuste',font=('Helvetica',14), fg="black")
+       label1.place(relx = 0.15, rely = 0.45, anchor = 'center', relwidth=0.15, relheight=0.05)
+       label_info = tk.Label(self, text='Ajustes:',font=('Helvetica',14), fg="black")
+       label_info.place(relx = 0.05, rely = 0.45, anchor = 'center', relwidth=0.05, relheight=0.05)
+
+       btn_add=tk.Button(self, text='Añadir ajuste',font=('Helvetica',14), command= Page2.Añadir)
+       btn_add.place(relx = 0.175, rely = 0.6, anchor = 'center', relwidth=0.075, relheight=0.05)
+
+       btn_supp=tk.Button(self, text='Suprimir ajuste', font=('Helvetica',14),command= Page2.Suprimir)
+       btn_supp.place(relx = 0.25, rely = 0.6, anchor = 'center', relwidth=0.075, relheight=0.05)
        #choices3=['Seguir: No','Seguir: Sí' ]
        #Seleccion3=ttk.Combobox(self, values=choices3, state="readonly",textvariable=entry_var9 )
        #Seleccion3.grid(row=10,column=0,columnspan=5,ipadx=5,ipady=12)
@@ -340,7 +385,7 @@ class Page2(Page):
 
         inst.write('SENS2:CHAN1:FUNC:STAT STAB,STOP') #Parar el logging
         inst.write('TRIG2:CHAN1:INP IGN') # ignorar el trigger
-        inst.write('SENS2:CHAN1:POW:UNIT 2') #
+        inst.write('SENS2:CHAN1:POW:UNIT 1') #
         #inst.write('SOURCE1:CHAN1:POW:STATE 1')
 
         wavelengthreal=wavelengthreal[0:(points)] # Adecuación de los resultados
@@ -607,6 +652,7 @@ class Page3(Page):
 
             inst.write('SENS2:CHAN1:FUNC:STAT STAB,STOP') #Parar el logging
             inst.write('TRIG2:CHAN1:INP IGN') # ignorar el trigger
+       
 
             wavelengthreal=wavelengthreal[0:(points)]  # Adecuación de los resultados
             wavelengthreal=pow(10,9)*np.array(wavelengthreal) #Hay que sumarle 2 por las dimensiones, funciona
@@ -647,7 +693,9 @@ class Page3(Page):
             if OnOff==0:
                 inst.close #Cerrar el instrumento
                 btn_exp.config(state=tk.NORMAL)
-            time.sleep(30)
+
+            time.sleep(3) ################### HACER QUE ESTO SEA VARIABLE
+        inst.write('SENS2:CHAN1:POW:UNIT 0') #
         
         
 
@@ -759,7 +807,11 @@ class Page3(Page):
             #Ajustes_finales_exp=Ajustes_finales_exp
             list_aux=[lim1, lim2]+list(popt)
             Ajuste_final_aux = pd.DataFrame( [(list_aux)], columns=['lim1' ,'lim2','H','A','x0','sigma'], index=[i +'_' +str(contador_int)])
-
+            
+            try :
+                Ajustes_finales_exp
+                Ajustes_finales_exp=pd.concat([Ajustes_finales_exp, Ajuste_final_aux])
+            except NameError: Ajustes_finales_exp = Ajuste_final_aux
             # Módulo temporal, incrementos de tiempo e incrementos de posición
             if contador_int==0:
                 if cont_aux==0:
@@ -779,26 +831,51 @@ class Page3(Page):
                     DatosTemp[len(list_nombres)].append(deltaTemp)
                     t1=t2                
 
-            
-            try :
-                Ajustes_finales_exp
-                Ajustes_finales_exp=pd.concat([Ajustes_finales_exp, Ajuste_final_aux])
-            except NameError: Ajustes_finales_exp = Ajuste_final_aux
+
             
             
             
 
             cont_aux=cont_aux+1
-                
             print(Ajustes_finales_exp)
         
-        print(DatosTemp)
+
+        #Para plotear querremos saber el incremento desde la posición inicial y el incremento en tiempo desde el tiempo inicial
+        
+        if contador_int>1:
+            Datos_procesados=Page3.suma(DatosTemp)
+            print(Datos_procesados)
+            Tiempo = Datos_procesados[len(list_nombres)]
+            Posicion = Datos_procesados[0]
+            ax3.cla()
+            ax3.plot(Tiempo,Posicion,'r.')
+            ax3.set_ylabel('Incremento posicion')
+            ax3.set_xlabel('Incremento temporal')
+            ax3.set_xlim([Datos_procesados[len(list_nombres)][0],Datos_procesados[len(list_nombres)][-1]]) # HAY QUE SEGUIR CON ESTO
+            canvas3.draw()          
+            print(DatosTemp)
+            print(Datos_procesados)
+        
+
+    
+    def suma(lista_aux): # Lo siento. Esta aberración es culpa de cómo python entiende las listas dentro de listas
+        lista=[]
+        for t in range(len(lista_aux)):
+            lista.append(lista_aux[t][:])
+        print(lista)
+        for i in range(len(lista)):
+            for j in range(len(lista[i])):
+                if j==0:
+                    print('nada')
+                else:
+                    lista[i][j]=lista[i][j]+lista[i][j-1]
+        return lista
             
 
     def __init__(self, *args, **kwargs):
 
-        global Seleccion12
-        global ax2,ax3,fig2,fig3,canvas2,canvas3, btn_exp
+        global Seleccion12, btn_exp, btn_stop
+        global ax2,ax3,fig2,fig3,canvas2,canvas3
         Page.__init__(self, *args, **kwargs)
     
         fig2,ax2= plt.subplots()
@@ -833,59 +910,65 @@ class Page3(Page):
         #ax3.set_ylabel('Power(dBm)')
         #ax3.set_xlabel('Wavelength')
 
-        label_lambda_min=tk.Label(self,text='Longitud de onda inicial (nm)')
-        label_lambda_min.grid(row=0,column=0,ipadx=5,ipady=15)
-        entry_lambda_min=tk.Entry(self,textvariable=entry_var1,state="readonly")
-        entry_lambda_min.grid(row=0,column=1,ipadx=5,ipady=15)
+        label_lambda_min=tk.Label(self,text='Longitud de onda inicial (nm)', font=('Helvetica',14), borderwidth=2, relief="groove")
+        label_lambda_min.place(relx = 0.1, rely = 0.1, anchor = 'center', relwidth=0.15, relheight=0.05)
+        entry_lambda_min=tk.Entry(self,textvariable=entry_var1,font=('Helvetica',14),state="readonly" )
+        entry_lambda_min.place(relx = 0.225, rely = 0.1, anchor = 'center', relwidth=0.1, relheight=0.05)
+    
         
-        label_lambda_max=tk.Label(self,text='Longitud de onda final (nm)')
-        label_lambda_max.grid(row=1,column=0,ipadx=5,ipady=15)
-        entry_lambda_max=tk.Entry(self,textvariable=entry_var2,state="readonly")
-        entry_lambda_max.grid(row=1,column=1,ipadx=5,ipady=15)
+        label_lambda_max=tk.Label(self,text='Longitud de onda final (nm)',font=('Helvetica',14),  borderwidth=2, relief="groove")
+        label_lambda_max.place(relx = 0.1, rely = 0.15, anchor = 'center', relwidth=0.15, relheight=0.05)
+        entry_lambda_max=tk.Entry(self,textvariable=entry_var2,font=('Helvetica',14),state="readonly")
+        entry_lambda_max.place(relx = 0.225, rely = 0.15, anchor = 'center', relwidth=0.1, relheight=0.05)
+  
         
-        label_lambda_speed=tk.Label(self,text='Velocidad del barrido (nm/s)')
-        label_lambda_speed.grid(row=2,column=0,ipadx=5,ipady=15)
-        entry_lambda_speed=tk.Entry(self,textvariable=entry_var3,state="readonly")
-        entry_lambda_speed.grid(row=2,column=1,ipadx=5,ipady=15)
+        label_lambda_speed=tk.Label(self,text='Velocidad del barrido (nm/s)',font=('Helvetica',14), borderwidth=2, relief="groove")
+        label_lambda_speed.place(relx = 0.1, rely = 0.2, anchor = 'center', relwidth=0.15, relheight=0.05)
+        entry_lambda_speed=tk.Entry(self,textvariable=entry_var3,font=('Helvetica',14),state="readonly")
+        entry_lambda_speed.place(relx = 0.225, rely = 0.2, anchor = 'center', relwidth=0.1, relheight=0.05)
+  
  
-        label_lambda_res=tk.Label(self,text='Resolución (pm)')
-        label_lambda_res.grid(row=3,column=0,ipadx=5,ipady=15)
-        entry_lambda_res=tk.Entry(self,textvariable=entry_var4,state="readonly")
-        entry_lambda_res.grid(row=3,column=1,ipadx=5,ipady=15)
+        label_lambda_res=tk.Label(self,text='Resolución (pm)',font=('Helvetica',14), borderwidth=2, relief="groove")
+        label_lambda_res.place(relx = 0.1, rely = 0.25, anchor = 'center', relwidth=0.15, relheight=0.05)
+        entry_lambda_res=tk.Entry(self,textvariable=entry_var4,font=('Helvetica',14),state="readonly")
+        entry_lambda_res.place(relx = 0.225, rely = 0.25, anchor = 'center', relwidth=0.1, relheight=0.05)
+    
  
-        label_lambda_num=tk.Label(self,text='Número de barridos. Opcional')
-        label_lambda_num.grid(row=4,column=0,ipadx=5,ipady=15)
-        entry_lambda_num=tk.Entry(self,textvariable=entry_var5)
-        entry_lambda_num.grid(row=4,column=1,ipadx=5,ipady=15)
+        label_lambda_num=tk.Label(self,text='Número de barridos. Opcional',font=('Helvetica',14), borderwidth=2, relief="groove")
+        label_lambda_num.place(relx = 0.1, rely = 0.3, anchor = 'center', relwidth=0.15, relheight=0.05)
+        entry_lambda_num=tk.Entry(self,textvariable=entry_var5,font=('Helvetica',14))
+        entry_lambda_num.place(relx = 0.225, rely = 0.3, anchor = 'center', relwidth=0.1, relheight=0.05)
+        entry_lambda_num.insert(0, "1")
 
-        label_Seleccion12=tk.Label(self,text='Mostrar en plot:')
-        label_Seleccion12.grid(row=6,column=0,ipadx=5,ipady=15)  
+        label_Seleccion12=tk.Label(self,text='Mostrar en plot:',font=('Helvetica',14),  borderwidth=2, relief="groove")
+        label_Seleccion12.place(relx = 0.1, rely = 0.35, anchor = 'center', relwidth=0.15, relheight=0.05)  
         choices12 = ['No hay ajustes']
-        Seleccion12 = ttk.Combobox(self, values=choices12, state="readonly", textvariable=entry_var11, postcommand= Page3.Actualizar  )
-        Seleccion12.grid(row=6,column=1,ipadx=5,ipady=15)
+        Seleccion12 = ttk.Combobox(self, values=choices12, state="readonly", textvariable=entry_var11, postcommand= Page3.Actualizar ,font=('Helvetica',14) )
+        Seleccion12.place(relx = 0.225, rely = 0.35, anchor = 'center', relwidth=0.1, relheight=0.05)
 
-        label_nombre=tk.Label(self,text='Nombre del archivo')
-        label_nombre.grid(row=7,column=0,ipadx=5,ipady=15)
-        entry_nombre=tk.Entry(self,textvariable=entry_var12)
-        entry_nombre.grid(row=7,column=1,ipadx=5,ipady=15)
-        entry_nombre.insert(0, 'Prueba')
+        label_nombre=tk.Label(self,text='Nombre del archivo',font=('Helvetica',14),  borderwidth=2, relief="groove")
+        label_nombre.place(relx = 0.1, rely = 0.4, anchor = 'center', relwidth=0.15, relheight=0.05)
+        entry_nombre=tk.Entry(self,textvariable=entry_var12,font=('Helvetica',14))
+        entry_nombre.place(relx = 0.225, rely = 0.4, anchor = 'center', relwidth=0.1, relheight=0.05)
 
-        label_seleccion=tk.Label(self,text='Modo de barrido')
-        label_seleccion.grid(row=8,column=0,ipadx=5,ipady=15)
+        label_seleccion=tk.Label(self,text='Modo de barrido',font=('Helvetica',14),  borderwidth=2, relief="groove")
+        label_seleccion.place(relx = 0.1, rely = 0.45, anchor = 'center', relwidth=0.15, relheight=0.05)
         choices1=['Barrido Único','Múltiples Barridos','Barrido Continuo. Stop manual']
-        Seleccion1=ttk.Combobox(self, values=choices1, state="readonly",textvariable=entry_var7 )
-        Seleccion1.grid(row=8,column=1,columnspan=5,ipadx=5,ipady=15)
-        Seleccion1.current(0)
+        Seleccion1=ttk.Combobox(self, values=choices1, state="readonly",textvariable=entry_var7,font=('Helvetica',14) )
+        Seleccion1.place(relx = 0.225, rely = 0.45, anchor = 'center', relwidth=0.1, relheight=0.05)
+        Seleccion1.current(1)
 
-        label_Exp=tk.Label(self,text='Comprobar las opciones elegidas antes de ejecutar el experimento')
-        label_Exp.grid(row=9,column=1,ipadx=5,ipady=15)
+        label_Exp=tk.Label(self,text='Comprobar las opciones elegidas antes de ejecutar el experimento',font=('Helvetica',14),  borderwidth=2, relief="solid")
+        label_Exp.place(relx = 0.175, rely = 0.55, anchor = 'center', relwidth=0.30, relheight=0.05)
         
+        #btn_showgraf=tk.Button(self, text='Stop', command=Page3.MostrarAjuste)
+        #btn_showgraf.grid(row=6,column=2,columnspan=10,ipadx=20,ipady=15)
 
-        btn_stop=tk.Button(self, text='Stop', command=Page2.Stop)
-        btn_stop.grid(row=10,column=2,columnspan=10,ipadx=20,ipady=15)
+        btn_stop=tk.Button(self, text='Stop', command=Page2.Stop,font=('Helvetica',14),  borderwidth=4, relief="raise", bg='grey', fg='red')
+        btn_stop.place(relx = 0.25, rely = 0.6, anchor = 'center', relwidth=0.15, relheight=0.05)
 
-        btn_exp=tk.Button(self, text='Empezar Experimento', command=Page3.Hilos3)
-        btn_exp.grid(row=10,column=0,columnspan=5,ipadx=5,ipady=15)
+        btn_exp=tk.Button(self, text='Empezar Experimento', command=Page3.Hilos3,font=('Helvetica',14),  borderwidth=4, relief="raised",bg='grey', fg='white')
+        btn_exp.place(relx = 0.1, rely = 0.6, anchor = 'center', relwidth=0.15, relheight=0.05)
 
     def Actualizar():
         Seleccion12['values'] = lista_ajustes #Al tocar el desplegable se inicia esta funcion y lo actualiza
